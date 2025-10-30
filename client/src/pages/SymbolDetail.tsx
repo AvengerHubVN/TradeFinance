@@ -11,6 +11,116 @@ import { useEffect, useRef, useState } from "react";
 import { createChart, ColorType, IChartApi } from 'lightweight-charts';
 import { toast } from "sonner";
 
+function PredictionsPanel({ symbol, ticker }: { symbol: string; ticker: any }) {
+  const currentPrice = ticker ? parseFloat(ticker.lastPrice || '0') : 0;
+  const priceChange24h = ticker ? parseFloat(ticker.priceChangePercent || '0') : 0;
+
+  const { data: predictions, isLoading } = trpc.predictions.generate.useQuery(
+    {
+      symbol,
+      currentPrice,
+      priceChange24h,
+    },
+    { enabled: !!ticker, refetchInterval: 60000 } // Refresh every minute
+  );
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!predictions || predictions.length === 0) {
+    return (
+      <Card>
+        <CardContent className="text-center py-12">
+          <p className="text-muted-foreground">No predictions available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const getSignalBadgeVariant = (signal: string) => {
+    if (signal.includes('buy')) return 'default';
+    if (signal.includes('sell')) return 'destructive';
+    return 'secondary';
+  };
+
+  const getDirectionIcon = (direction: string) => {
+    if (direction === 'bullish') return <ArrowUpRight className="h-5 w-5 text-green-500" />;
+    if (direction === 'bearish') return <ArrowDownRight className="h-5 w-5 text-red-500" />;
+    return <Activity className="h-5 w-5 text-yellow-500" />;
+  };
+
+  const getTimeframeLabel = (timeframe: string) => {
+    if (timeframe === 'short') return 'Short-term (1-7 days)';
+    if (timeframe === 'medium') return 'Medium-term (1-4 weeks)';
+    return 'Long-term (1-6 months)';
+  };
+
+  return (
+    <div className="space-y-4">
+      {predictions.map((pred: any, idx: number) => (
+        <Card key={idx}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {getDirectionIcon(pred.direction)}
+                <CardTitle className="capitalize">{getTimeframeLabel(pred.timeframe)}</CardTitle>
+              </div>
+              <Badge variant={getSignalBadgeVariant(pred.signal)} className="capitalize">
+                {pred.signal.replace('_', ' ')}
+              </Badge>
+            </div>
+            <CardDescription>
+              Confidence: {pred.confidence}% • {pred.direction.charAt(0).toUpperCase() + pred.direction.slice(1)}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Current Price</p>
+                <p className="text-xl font-bold font-mono">${pred.currentPrice}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Target Price</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xl font-bold font-mono">${pred.targetPrice}</p>
+                  <Badge variant={pred.priceChange > 0 ? 'default' : 'destructive'}>
+                    {pred.priceChange > 0 ? '+' : ''}{pred.priceChange.toFixed(2)}%
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold mb-2">Analysis:</p>
+              <ul className="space-y-1">
+                {pred.reasoning.map((reason: string, i: number) => (
+                  <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>{reason}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="pt-2 border-t border-border">
+              <p className="text-xs text-muted-foreground">
+                ⚠️ This is a demo prediction. Phase 2 will include real ML models with higher accuracy.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 function PriceChart({ symbol }: { symbol: string }) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -324,21 +434,7 @@ export default function SymbolDetail() {
           </TabsContent>
 
           <TabsContent value="analysis" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Technical Analysis</CardTitle>
-                <CardDescription>ML-powered predictions and indicators</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground mb-2">Coming soon</p>
-                  <p className="text-sm text-muted-foreground">
-                    ML predictions and technical indicators will be available in the next update
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <PredictionsPanel symbol={symbol} ticker={ticker} />
           </TabsContent>
         </Tabs>
       </main>

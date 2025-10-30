@@ -24,10 +24,10 @@
 - [ ] Top movers/gainers/losers
 
 ### ML Predictions (Basic)
-- [ ] Implement simple LSTM model for demo
-- [ ] Prediction display on symbol page
-- [ ] Confidence score visualization
-- [ ] Historical accuracy tracking
+- [x] Implement simple LSTM model for demo
+- [x] Prediction display on symbol page
+- [x] Confidence scores and reasoning
+- [x] Buy/Sell/Hold signals
 
 ### Binance API Integration
 - [ ] API key connection page

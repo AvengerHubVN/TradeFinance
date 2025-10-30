@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import * as binance from "./binance";
+import * as mlPredictions from "./ml-predictions";
 
 export const appRouter = router({
   system: systemRouter,
@@ -172,8 +173,9 @@ export const appRouter = router({
       }),
   }),
 
-  // Predictions
+  // ML Predictions
   predictions: router({
+    // Get stored predictions from database
     getLatest: publicProcedure
       .input(z.object({
         symbolId: z.number(),
@@ -181,6 +183,21 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         return db.getLatestPredictions(input.symbolId, input.limit);
+      }),
+
+    // Generate live predictions
+    generate: publicProcedure
+      .input(z.object({
+        symbol: z.string(),
+        currentPrice: z.number(),
+        priceChange24h: z.number(),
+      }))
+      .query(async ({ input }) => {
+        return mlPredictions.generateAllPredictions(
+          input.symbol,
+          input.currentPrice,
+          input.priceChange24h
+        );
       }),
   }),
 
