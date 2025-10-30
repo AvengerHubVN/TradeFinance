@@ -18,7 +18,7 @@
 ### Market Data & Display
 - [x] Integrate Binance WebSocket for real-time data
 - [x] Market overview dashboard
-- [ ] Symbol detail page with TradingView charts
+- [x] Symbol detail page with TradingView charts
 - [x] Price ticker display
 - [x] Watchlist functionality
 - [ ] Top movers/gainers/losers
