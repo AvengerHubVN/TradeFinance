@@ -1,6 +1,23 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { 
+  InsertUser, 
+  users, 
+  symbols, 
+  InsertSymbol,
+  Symbol,
+  userWatchlists,
+  InsertUserWatchlist,
+  userPreferences,
+  InsertUserPreference,
+  UserPreference,
+  predictions,
+  InsertPrediction,
+  Prediction,
+  historicalPrices,
+  InsertHistoricalPrice,
+  HistoricalPrice
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -17,6 +34,10 @@ export async function getDb() {
   }
   return _db;
 }
+
+// ============================================================================
+// USER MANAGEMENT
+// ============================================================================
 
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) {
@@ -89,4 +110,192 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ============================================================================
+// SYMBOLS
+// ============================================================================
+
+export async function getAllSymbols(): Promise<Symbol[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db.select().from(symbols).where(eq(symbols.isActive, true));
+}
+
+export async function getSymbolById(symbolId: number): Promise<Symbol | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(symbols).where(eq(symbols.id, symbolId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getSymbolBySymbol(symbol: string): Promise<Symbol | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(symbols).where(eq(symbols.symbol, symbol)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function upsertSymbol(symbol: InsertSymbol): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(symbols).values(symbol).onDuplicateKeyUpdate({
+    set: {
+      name: symbol.name,
+      type: symbol.type,
+      exchange: symbol.exchange,
+      isActive: symbol.isActive,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+// ============================================================================
+// USER WATCHLISTS
+// ============================================================================
+
+export async function getUserWatchlist(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select({
+      id: userWatchlists.id,
+      symbolId: userWatchlists.symbolId,
+      symbol: symbols.symbol,
+      name: symbols.name,
+      type: symbols.type,
+      exchange: symbols.exchange,
+      createdAt: userWatchlists.createdAt,
+    })
+    .from(userWatchlists)
+    .innerJoin(symbols, eq(userWatchlists.symbolId, symbols.id))
+    .where(eq(userWatchlists.userId, userId));
+
+  return result;
+}
+
+export async function addToWatchlist(userId: number, symbolId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(userWatchlists).values({
+    userId,
+    symbolId,
+  }).onDuplicateKeyUpdate({
+    set: { createdAt: new Date() },
+  });
+}
+
+export async function removeFromWatchlist(userId: number, symbolId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.delete(userWatchlists).where(
+    and(
+      eq(userWatchlists.userId, userId),
+      eq(userWatchlists.symbolId, symbolId)
+    )
+  );
+}
+
+// ============================================================================
+// USER PREFERENCES
+// ============================================================================
+
+export async function getUserPreferences(userId: number): Promise<UserPreference | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function upsertUserPreferences(prefs: InsertUserPreference): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(userPreferences).values(prefs).onDuplicateKeyUpdate({
+    set: {
+      riskTolerance: prefs.riskTolerance,
+      defaultCapital: prefs.defaultCapital,
+      preferredAssets: prefs.preferredAssets,
+      notificationsEnabled: prefs.notificationsEnabled,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+// ============================================================================
+// PREDICTIONS
+// ============================================================================
+
+export async function getLatestPredictions(symbolId: number, limit: number = 10): Promise<Prediction[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(predictions)
+    .where(eq(predictions.symbolId, symbolId))
+    .orderBy(desc(predictions.predictionDate))
+    .limit(limit);
+}
+
+export async function insertPrediction(prediction: InsertPrediction): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(predictions).values(prediction);
+}
+
+// ============================================================================
+// HISTORICAL PRICES
+// ============================================================================
+
+export async function getHistoricalPrices(
+  symbolId: number,
+  interval: string,
+  limit: number = 100
+): Promise<HistoricalPrice[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(historicalPrices)
+    .where(
+      and(
+        eq(historicalPrices.symbolId, symbolId),
+        eq(historicalPrices.interval, interval)
+      )
+    )
+    .orderBy(desc(historicalPrices.timestamp))
+    .limit(limit);
+}
+
+export async function insertHistoricalPrice(price: InsertHistoricalPrice): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(historicalPrices).values(price);
+}
+
+export async function bulkInsertHistoricalPrices(prices: InsertHistoricalPrice[]): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  if (prices.length === 0) return;
+
+  await db.insert(historicalPrices).values(prices);
+}
