@@ -128,6 +128,35 @@ export async function getMultipleTickers(symbols: string[]) {
 }
 
 /**
+ * Get account information (requires API keys with HMAC signature)
+ */
+export async function getAccountInfo(apiKey: string, apiSecret: string) {
+  const timestamp = Date.now();
+  const queryString = `timestamp=${timestamp}`;
+  
+  // Create HMAC SHA256 signature
+  const crypto = await import('crypto');
+  const signature = crypto.createHmac('sha256', apiSecret)
+    .update(queryString)
+    .digest('hex');
+
+  const url = `${BINANCE_API_BASE}/api/v3/account?${queryString}&signature=${signature}`;
+  
+  const response = await fetch(url, {
+    headers: {
+      'X-MBX-APIKEY': apiKey,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.msg || 'Failed to get account info');
+  }
+
+  return response.json();
+}
+
+/**
  * Test API key permissions (for authenticated endpoints)
  * Note: This requires HMAC signature - simplified for MVP
  */

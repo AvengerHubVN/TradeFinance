@@ -201,6 +201,55 @@ export const appRouter = router({
       }),
   }),
 
+  // Binance API Connection
+  binance: router({ getConnection: protectedProcedure
+      .query(async ({ ctx }) => {
+        const connection = await db.getBinanceConnection(ctx.user.id);
+        return {
+          isConnected: !!connection,
+          createdAt: connection?.createdAt,
+        };
+      }),
+
+    testConnection: protectedProcedure
+      .input(z.object({
+        apiKey: z.string(),
+        apiSecret: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          // Test connection with Binance
+          const account = await binance.getAccountInfo(input.apiKey, input.apiSecret);
+          return {
+            success: true,
+            message: 'Connection successful',
+          };
+        } catch (error: any) {
+          return {
+            success: false,
+            message: error.message || 'Connection failed',
+          };
+        }
+      }),
+
+    saveKeys: protectedProcedure
+      .input(z.object({
+        apiKey: z.string(),
+        apiSecret: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // TODO: Encrypt keys before saving
+        await db.saveBinanceKeys(ctx.user.id, input.apiKey, input.apiSecret);
+        return { success: true };
+      }),
+
+    deleteKeys: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        await db.deleteBinanceKeys(ctx.user.id);
+        return { success: true };
+      }),
+  }),
+
   // Historical prices
   prices: router({
     getHistory: publicProcedure

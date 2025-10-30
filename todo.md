@@ -29,10 +29,29 @@
 - [x] Confidence scores and reasoning
 - [x] Buy/Sell/Hold signals
 
+### Prediction History & Accuracy Tracking
+- [ ] Store predictions in database with timestamps
+- [ ] Track actual price outcomes
+- [ ] Calculate accuracy metrics (% correct)
+- [ ] Display prediction history table
+- [ ] Show accuracy percentage per timeframe
+- [ ] Filter by symbol and date range
+
+### Technical Indicators on Charts
+- [ ] Add RSI (Relative Strength Index)
+- [ ] Add MACD (Moving Average Convergence Divergence)
+- [ ] Add Bollinger Bands
+- [ ] Add SMA (Simple Moving Average)
+- [ ] Add EMA (Exponential Moving Average)
+- [ ] Toggle indicators on/off
+- [ ] Indicator settings panel
+
 ### Binance API Integration
-- [ ] API key connection page
-- [ ] API key encryption
-- [ ] API key verification
+- [x] API key connection page (in Settings)
+- [ ] API key encryption (TODO: implement proper encryption)
+- [x] API key verification
+- [x] Test connection functionality
+- [x] Display connection status
 - [ ] Balance display
 - [ ] Order history
 
@@ -44,11 +63,12 @@
 - [ ] Trade logging
 
 ### Goal-Based Strategy (Simplified)
-- [ ] Goal input form (target ROI)
-- [ ] Simple strategy generator
-- [ ] Strategy display with metrics
-- [ ] Disclaimer modal
-- [ ] Strategy activation
+- [ ] Goal input form (target ROI, capital, timeframe, risk tolerance)
+- [ ] Strategy generator (3 options: Conservative/Moderate/Aggressive)
+- [ ] Strategy details: coin allocation, leverage, entry/exit points
+- [ ] Backtesting results display
+- [ ] Disclaimer modal with risk warnings
+- [ ] Strategy activation button
 
 ### UI/UX
 - [ ] Responsive design (mobile-friendly)

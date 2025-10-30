@@ -16,7 +16,8 @@ import {
   Prediction,
   historicalPrices,
   InsertHistoricalPrice,
-  HistoricalPrice
+  HistoricalPrice,
+  exchangeConnections
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -298,4 +299,49 @@ export async function bulkInsertHistoricalPrices(prices: InsertHistoricalPrice[]
   if (prices.length === 0) return;
 
   await db.insert(historicalPrices).values(prices);
+}
+
+// ============================================================================
+// BINANCE API CONNECTION
+// ============================================================================
+
+export async function getBinanceConnection(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(exchangeConnections)
+    .where(eq(exchangeConnections.userId, userId))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function saveBinanceKeys(userId: number, apiKey: string, apiSecret: string) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  // TODO: Encrypt keys before saving
+  // For MVP, we'll store them as-is (NOT RECOMMENDED FOR PRODUCTION)
+  await db.insert(exchangeConnections).values({
+    userId,
+    exchange: 'binance',
+    apiKeyEncrypted: apiKey, // TODO: Encrypt
+    apiSecretEncrypted: apiSecret, // TODO: Encrypt
+    isActive: true,
+  }).onDuplicateKeyUpdate({
+    set: {
+      apiKeyEncrypted: apiKey,
+      apiSecretEncrypted: apiSecret,
+      isActive: true,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+export async function deleteBinanceKeys(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  await db.delete(exchangeConnections)
+    .where(eq(exchangeConnections.userId, userId));
 }
