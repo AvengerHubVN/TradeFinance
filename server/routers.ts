@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
+import * as binance from "./binance";
 
 export const appRouter = router({
   system: systemRouter,
@@ -93,6 +94,81 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         return db.getSymbolBySymbol(input.symbol);
+      }),
+  }),
+
+  // Market data
+  market: router({
+    // Get current price for a symbol
+    getCurrentPrice: publicProcedure
+      .input(z.object({
+        symbol: z.string(),
+      }))
+      .query(async ({ input }) => {
+        try {
+          const price = await binance.getCurrentPrice(input.symbol);
+          return { symbol: input.symbol, price };
+        } catch (error) {
+          console.error('Error fetching price:', error);
+          return { symbol: input.symbol, price: '0' };
+        }
+      }),
+
+    // Get 24h ticker data
+    get24hTicker: publicProcedure
+      .input(z.object({
+        symbol: z.string(),
+      }))
+      .query(async ({ input }) => {
+        try {
+          const ticker = await binance.get24hTicker(input.symbol);
+          return ticker;
+        } catch (error) {
+          console.error('Error fetching ticker:', error);
+          return null;
+        }
+      }),
+
+    // Get prices for multiple symbols
+    getMultiplePrices: publicProcedure
+      .input(z.object({
+        symbols: z.array(z.string()),
+      }))
+      .query(async ({ input }) => {
+        const prices: Record<string, string> = {};
+        
+        for (const symbol of input.symbols) {
+          try {
+            const price = await binance.getCurrentPrice(symbol);
+            prices[symbol] = price;
+          } catch (error) {
+            console.error(`Error fetching price for ${symbol}:`, error);
+            prices[symbol] = '0';
+          }
+        }
+        
+        return prices;
+      }),
+
+    // Get historical klines
+    getKlines: publicProcedure
+      .input(z.object({
+        symbol: z.string(),
+        interval: z.enum(['1m', '5m', '15m', '1h', '4h', '1d', '1w']),
+        limit: z.number().optional().default(100),
+      }))
+      .query(async ({ input }) => {
+        try {
+          const klines = await binance.getKlines({
+            symbol: input.symbol,
+            interval: input.interval,
+            limit: input.limit,
+          });
+          return klines;
+        } catch (error) {
+          console.error('Error fetching klines:', error);
+          return [];
+        }
       }),
   }),
 

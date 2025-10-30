@@ -1,10 +1,40 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, TrendingUp, TrendingDown, Activity, Loader2 } from "lucide-react";
+import { ArrowRight, TrendingUp, TrendingDown, Activity, Loader2, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Link } from "wouter";
+import { useEffect, useState } from "react";
+
+function PriceDisplay({ symbol }: { symbol: string }) {
+  const { data: ticker, isLoading } = trpc.market.get24hTicker.useQuery(
+    { symbol },
+    { refetchInterval: 5000 } // Refresh every 5 seconds
+  );
+
+  if (isLoading) {
+    return <span className="text-sm text-muted-foreground">Loading...</span>;
+  }
+
+  if (!ticker) {
+    return <span className="text-sm text-muted-foreground">-</span>;
+  }
+
+  const priceChange = parseFloat(ticker.priceChangePercent || '0');
+  const isPositive = priceChange >= 0;
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="font-mono text-sm">${parseFloat(ticker.lastPrice || '0').toLocaleString()}</span>
+      <Badge variant={isPositive ? "default" : "destructive"} className="gap-1">
+        {isPositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+        {Math.abs(priceChange).toFixed(2)}%
+      </Badge>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -131,7 +161,10 @@ export default function Dashboard() {
                       <h3 className="font-semibold text-foreground">{item.symbol}</h3>
                       <p className="text-sm text-muted-foreground">{item.name}</p>
                     </div>
-                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex items-center gap-4">
+                      <PriceDisplay symbol={item.symbol} />
+                      <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                    </div>
                   </Link>
                 ))}
               </div>
@@ -163,20 +196,23 @@ export default function Dashboard() {
               </div>
             ) : symbols && symbols.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {symbols.slice(0, 6).map((symbol) => (
+                {symbols.map((symbol) => (
                   <Link
                     key={symbol.id}
                     href={`/symbol/${symbol.symbol}`}
                     className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent transition-colors"
                   >
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-semibold text-foreground">{symbol.symbol}</h3>
                       <p className="text-sm text-muted-foreground">{symbol.name}</p>
                       <span className="text-xs text-muted-foreground capitalize">
                         {symbol.type}
                       </span>
                     </div>
-                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex items-center gap-2">
+                      <PriceDisplay symbol={symbol.symbol} />
+                      <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    </div>
                   </Link>
                 ))}
               </div>
