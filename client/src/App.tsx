@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import SymbolDetail from "./pages/SymbolDetail";
 import Settings from "./pages/Settings";
 import PredictionHistory from "./pages/PredictionHistory";
+import AutoTrading from "./pages/AutoTrading";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/symbol/:symbol" component={SymbolDetail} />
       <Route path="/settings" component={Settings} />
       <Route path="/predictions" component={PredictionHistory} />
+      <Route path="/auto-trading" component={AutoTrading} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

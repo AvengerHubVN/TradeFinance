@@ -39,12 +39,12 @@
 - [x] Confidence scoring system (>75% threshold)
 
 ### Prediction History & Accuracy Tracking
-- [ ] Store predictions in database with timestamps
-- [ ] Track actual price outcomes
-- [ ] Calculate accuracy metrics (% correct)
-- [ ] Display prediction history table
-- [ ] Show accuracy percentage per timeframe
-- [ ] Filter by symbol and date range
+- [x] Store predictions in database with timestamps
+- [ ] Track actual price outcomes (TODO: background job)
+- [x] Calculate accuracy metrics (% correct)
+- [x] Display prediction history table
+- [x] Show accuracy percentage per timeframe
+- [x] Filter by symbol and date range
 
 ### Technical Indicators on Charts
 - [x] Add Fibonacci MAs (MA7, MA13, MA21, MA34, MA55, MA89, MA144, MA233, MA377, MA610)
@@ -72,14 +72,14 @@
 - [ ] Trade logging
 
 ### Goal-Based Auto Trading
-- [ ] Goal input form (target ROI, capital, timeframe, risk tolerance)
-- [ ] Strategy generator using AI ensemble (3 options: Conservative/Moderate/Aggressive)
-- [ ] Strategy details: coin allocation, position sizing, entry/exit points
-- [ ] Backtesting results display
-- [ ] Disclaimer modal with comprehensive risk warnings
-- [ ] Strategy activation and monitoring
-- [ ] Auto trade execution based on AI signals
-- [ ] Real-time trade logs and performance tracking
+- [x] Goal input form (target ROI, capital, timeframe, risk tolerance)
+- [x] Strategy generator using AI ensemble (3 options: Conservative/Moderate/Aggressive)
+- [x] Strategy details: coin allocation, position sizing, entry/exit points
+- [x] Backtesting results display (simulated)
+- [x] Disclaimer modal with comprehensive risk warnings
+- [x] Strategy activation flow
+- [ ] Auto trade execution based on AI signals (TODO: background worker)
+- [ ] Real-time trade logs and performance tracking (TODO: monitoring dashboard)
 
 ### UI/UX
 - [ ] Responsive design (mobile-friendly)

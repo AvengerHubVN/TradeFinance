@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, TrendingUp, TrendingDown, Activity, Loader2, ArrowUpRight, ArrowDownRight, History } from "lucide-react";
+import { ArrowRight, TrendingUp, TrendingDown, Activity, Loader2, ArrowUpRight, ArrowDownRight, History, Bot } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect, useState } from "react";
 
@@ -79,8 +79,14 @@ export default function Dashboard() {
             {APP_LOGO && <img src={APP_LOGO} alt={APP_TITLE} className="h-8 w-8" />}
             <h1 className="text-2xl font-bold text-foreground">{APP_TITLE}</h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
+            <Button asChild variant="default" size="sm">
+              <Link href="/auto-trading">
+                <Bot className="h-4 w-4 mr-2" />
+                Auto Trading
+              </Link>
+            </Button>
             <Button asChild variant="outline" size="sm">
               <Link href="/predictions">
                 <History className="h-4 w-4 mr-2" />
