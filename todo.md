@@ -99,8 +99,8 @@
 ## Phase 2: Advanced Features (User + Cursor AI)
 
 ### Advanced ML Models
-- [ ] Implement TFT (Temporal Fusion Transformer)
-- [ ] Implement GNN (Graph Neural Networks)
+- [x] On-Chain Data Analysis
+- [x] Multi-Timeframe Analysis (MTA)
 - [ ] Implement XGBoost
 - [ ] Implement Prophet
 - [ ] Ensemble model combining all 5 models
@@ -148,7 +148,7 @@
 - [ ] Glossary
 
 ### Additional Features
-- [ ] News & sentiment analysis
+- [x] News & sentiment analysis
 - [ ] Market screener
 - [ ] Price alerts
 - [ ] Email notifications

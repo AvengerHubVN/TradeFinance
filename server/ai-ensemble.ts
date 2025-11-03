@@ -42,6 +42,10 @@ export interface MarketData {
   sma20?: number;
   sma50?: number;
   bollinger?: { upper: number; middle: number; lower: number };
+  // New features
+  sentimentScore?: number; // -1.0 to 1.0
+  onChainWhaleScore?: number; // -1.0 to 1.0
+  mtaOverallSignal?: TradingSignal; // from Multi-Timeframe Analysis
 }
 
 /**
@@ -49,6 +53,14 @@ export interface MarketData {
  * Focus: Technical analysis, pattern recognition
  */
 export async function analyzeWithQwen(data: MarketData): Promise<AIAnalysis> {
+  // Add new data points to the prompt for Qwen
+  const sentimentInfo = data.sentimentScore !== undefined ? 
+    `- Sentiment Score: ${data.sentimentScore.toFixed(2)} (Social/News)` : '';
+  const onChainInfo = data.onChainWhaleScore !== undefined ? 
+    `- On-Chain Whale Score: ${data.onChainWhaleScore.toFixed(2)} (Accumulation/Distribution)` : '';
+  const mtaInfo = data.mtaOverallSignal ? 
+    `- Multi-Timeframe Signal: ${data.mtaOverallSignal}` : '';
+
   const prompt = `You are an expert cryptocurrency trader analyzing ${data.symbol}.
 
 Current Market Data:
@@ -61,6 +73,9 @@ ${data.rsi ? `- RSI: ${data.rsi}` : ''}
 ${data.macd ? `- MACD: ${data.macd.value.toFixed(2)} (Signal: ${data.macd.signal.toFixed(2)})` : ''}
 ${data.sma20 ? `- SMA20: $${data.sma20}` : ''}
 ${data.sma50 ? `- SMA50: $${data.sma50}` : ''}
+${sentimentInfo}
+${onChainInfo}
+${mtaInfo}
 
 Analyze this data and provide a trading recommendation in JSON format:
 {
@@ -141,6 +156,14 @@ Focus on technical patterns, momentum indicators, and price action.`;
  * Focus: Risk assessment, strategy optimization
  */
 export async function analyzeWithDeepSeek(data: MarketData): Promise<AIAnalysis> {
+  // Add new data points to the prompt for DeepSeek
+  const sentimentInfo = data.sentimentScore !== undefined ? 
+    `- Sentiment Score: ${data.sentimentScore.toFixed(2)} (Social/News)` : '';
+  const onChainInfo = data.onChainWhaleScore !== undefined ? 
+    `- On-Chain Whale Score: ${data.onChainWhaleScore.toFixed(2)} (Accumulation/Distribution)` : '';
+  const mtaInfo = data.mtaOverallSignal ? 
+    `- Multi-Timeframe Signal: ${data.mtaOverallSignal}` : '';
+
   const prompt = `You are a risk management expert analyzing ${data.symbol} for trading.
 
 Current Market Data:
@@ -151,7 +174,9 @@ Current Market Data:
 - 24h Low: $${data.low24h}
 ${data.rsi ? `- RSI: ${data.rsi}` : ''}
 ${data.macd ? `- MACD: ${data.macd.value.toFixed(2)}` : ''}
-
+${sentimentInfo}
+${onChainInfo}
+${mtaInfo}
 Provide a risk-focused trading recommendation in JSON format:
 {
   "signal": "strong_buy" | "buy" | "hold" | "sell" | "strong_sell",
@@ -307,6 +332,10 @@ export function calculateConsensus(
 
 /**
  * Main function: Get ensemble analysis for a symbol
+ * 
+ * Note: The input data should now include sentiment, on-chain, and MTA results
+ * for the LLMs to use in their analysis.
+ */
  */
 export async function getEnsembleAnalysis(data: MarketData): Promise<EnsembleResult> {
   // Run both AI analyses in parallel
