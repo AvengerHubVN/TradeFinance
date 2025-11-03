@@ -4,4 +4,5 @@
  */
 
 export type * from "../drizzle/schema";
+export type { TradingSignal } from "../../server/ml-predictions";
 export * from "./_core/errors";

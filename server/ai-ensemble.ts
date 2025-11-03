@@ -336,7 +336,6 @@ export function calculateConsensus(
  * Note: The input data should now include sentiment, on-chain, and MTA results
  * for the LLMs to use in their analysis.
  */
- */
 export async function getEnsembleAnalysis(data: MarketData): Promise<EnsembleResult> {
   // Run both AI analyses in parallel
   const [qwenAnalysis, deepseekAnalysis] = await Promise.all([

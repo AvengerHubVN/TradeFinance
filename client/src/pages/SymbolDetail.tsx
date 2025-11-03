@@ -12,6 +12,9 @@ import { createChart, ColorType, IChartApi } from 'lightweight-charts';
 import { toast } from "sonner";
 import { AIEnsemblePanel } from "@/components/AIEnsemblePanel";
 import { AdvancedPriceChart } from "@/components/AdvancedPriceChart";
+import { SentimentAnalysisPanel } from "@/components/SentimentAnalysisPanel";
+import { OnChainDataPanel } from "@/components/OnChainDataPanel";
+import { MultiTimeframeAnalysisPanel } from "@/components/MultiTimeframeAnalysisPanel";
 
 function PredictionsPanel({ symbol, ticker }: { symbol: string; ticker: any }) {
   const currentPrice = ticker ? parseFloat(ticker.lastPrice || '0') : 0;
@@ -248,6 +251,22 @@ export default function SymbolDetail() {
   const { symbol } = useParams<{ symbol: string }>();
   const { user } = useAuth();
   
+  // Fetch new data for AI Ensemble
+  const { data: sentimentData } = trpc.sentiment.get.useQuery(
+    { symbol: symbol || '' },
+    { enabled: !!symbol, refetchInterval: 60000 * 5 }
+  );
+
+  const { data: onChainData } = trpc.onChain.get.useQuery(
+    { symbol: symbol || '' },
+    { enabled: !!symbol, refetchInterval: 60000 * 10 }
+  );
+
+  const { data: mtaData } = trpc.mta.get.useQuery(
+    { symbol: symbol || '' },
+    { enabled: !!symbol, refetchInterval: 60000 * 15 }
+  );
+  
   const { data: symbolData } = trpc.symbols.getBySymbol.useQuery(
     { symbol: symbol || '' },
     { enabled: !!symbol }
@@ -436,8 +455,23 @@ export default function SymbolDetail() {
           </TabsContent>
 
           <TabsContent value="analysis" className="space-y-4">
-            <AIEnsemblePanel symbol={symbol} ticker={ticker} />
-            <PredictionsPanel symbol={symbol} ticker={ticker} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2 space-y-4">
+                <AIEnsemblePanel 
+                  symbol={symbol} 
+                  ticker={ticker} 
+                  sentimentScore={sentimentData?.score}
+                  onChainWhaleScore={onChainData?.whaleAccumulationScore}
+                  mtaOverallSignal={mtaData?.overallSignal}
+                />
+                <PredictionsPanel symbol={symbol} ticker={ticker} />
+              </div>
+              <div className="lg:col-span-1 space-y-4">
+                <SentimentAnalysisPanel symbol={symbol} />
+                <OnChainDataPanel symbol={symbol} />
+                <MultiTimeframeAnalysisPanel symbol={symbol} />
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </main>

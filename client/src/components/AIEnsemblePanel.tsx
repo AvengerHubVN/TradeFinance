@@ -6,12 +6,17 @@ import { Loader2, Brain, Shield, TrendingUp, AlertCircle, CheckCircle2 } from "l
 import { useState } from "react";
 import { Streamdown } from "streamdown";
 
+import { TradingSignal } from "@shared/types"; // Assuming @shared/types is available
+
 interface AIEnsemblePanelProps {
   symbol: string;
   ticker: any;
+  sentimentScore?: number;
+  onChainWhaleScore?: number;
+  mtaOverallSignal?: TradingSignal;
 }
 
-export function AIEnsemblePanel({ symbol, ticker }: AIEnsemblePanelProps) {
+export function AIEnsemblePanel({ symbol, ticker, sentimentScore, onChainWhaleScore, mtaOverallSignal }: AIEnsemblePanelProps) {
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -37,6 +42,10 @@ export function AIEnsemblePanel({ symbol, ticker }: AIEnsemblePanelProps) {
       volume24h: parseFloat(ticker.volume || '0'),
       high24h: parseFloat(ticker.highPrice || '0'),
       low24h: parseFloat(ticker.lowPrice || '0'),
+      // Pass new data to the server
+      sentimentScore,
+      onChainWhaleScore,
+      mtaOverallSignal,
     });
   };
 
