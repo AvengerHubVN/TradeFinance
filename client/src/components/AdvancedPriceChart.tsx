@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
 import { Loader2, Settings2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { createChart, ColorType, IChartApi, ISeriesApi, LineStyle } from 'lightweight-charts';
+import * as LightweightCharts from 'lightweight-charts';
+import { ColorType, IChartApi, ISeriesApi, LineStyle } from 'lightweight-charts';
 import {
   Popover,
   PopoverContent,
@@ -102,7 +103,7 @@ export function AdvancedPriceChart({ symbol }: AdvancedPriceChartProps) {
     }
 
     // Create chart
-    const chart = createChart(chartContainerRef.current, {
+    const chart = LightweightCharts.createChart(chartContainerRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: 'transparent' },
         textColor: '#9CA3AF',
