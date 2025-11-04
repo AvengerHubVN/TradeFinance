@@ -125,7 +125,7 @@ export function AdvancedPriceChart({ symbol }: AdvancedPriceChartProps) {
     chartRef.current = chart;
 
     // Add candlestick series
-    const candlestickSeries = (chart as any).addCandlestickSeries({
+    const candlestickSeries = chart.addCandlestickSeries({
       upColor: '#10B981',
       downColor: '#EF4444',
       borderVisible: false,
@@ -160,7 +160,7 @@ export function AdvancedPriceChart({ symbol }: AdvancedPriceChartProps) {
         .filter((d) => d.value !== null) as { time: number; value: number }[];
 
       if (maData.length > 0) {
-        const lineSeries = (chart as any).addLineSeries({
+        const lineSeries = chart.addLineSeries({
           color: ma.color,
           lineWidth: 2,
           title: ma.label,
@@ -184,7 +184,7 @@ export function AdvancedPriceChart({ symbol }: AdvancedPriceChartProps) {
         .filter((d) => d.value !== null) as { time: number; value: number }[];
 
       if (rsiData.length > 0) {
-        const rsiSeries = (chart as any).addLineSeries({
+        const rsiSeries = chart.addLineSeries({
           color: '#9333EA',
           lineWidth: 2,
           title: 'RSI',
